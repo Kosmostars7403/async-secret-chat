@@ -2,4 +2,5 @@
 venv
 chat_log.txt
 config.txt
+token.txt
 *.pyc

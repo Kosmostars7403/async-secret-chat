@@ -1,7 +1,8 @@
 import asyncio
+import json
 import logging
-from datetime import datetime
 
+import aiofiles
 import configargparse
 
 
@@ -20,18 +21,15 @@ def get_application_options():
     return parser.parse_args()
 
 
-async def send_message(writer, logger, message):
+async def submit_message(writer, logger, message):
     logger.debug(f'Sending message: {message}')
     writer.write(message.encode(encoding='utf-8') + b'\n\n')
     await writer.drain()
 
 
-async def read_message(reader, logger):
-    message_received_time = datetime.now().strftime('%d.%m.%y %H:%M:%S')
+async def read_message(reader):
     message = await reader.readline()
-    message = f'[{message_received_time}] {message.decode()}'
-    logger.debug(message)
-    return message
+    return message.decode()
 
 
 def handle_errors(async_func):
@@ -45,3 +43,32 @@ def handle_errors(async_func):
     return wrapper
 
 
+async def register(writer, reader, logger, username):
+    await submit_message(writer, logger, '')
+    server_message = await read_message(reader)
+    logger.debug(server_message)
+
+    await submit_message(writer, logger, username)
+    auth_response = await reader.readline()
+    account_hash = json.loads(auth_response.decode())['account_hash']
+
+    async with aiofiles.open('token.txt', mode='w', encoding='utf-8') as file:
+        await file.write(account_hash)
+
+    logger.debug(f'Your token is {account_hash}. Save it, please!')
+
+    writer.close()
+    await writer.wait_closed()
+
+    return account_hash
+
+
+async def authorize(writer, reader, token, logger):
+    await asyncio.wait_for(submit_message(writer, logger, token), 10)
+    auth_response = await read_message(reader)
+    auth_response = json.loads(auth_response)
+    if not auth_response:
+        logger.error('Wrong token. Try again or register a new username.')
+        return None
+    logging.debug(f'Successfully authorized with nickname {auth_response["nickname"]}')
+    return auth_response['nickname']
