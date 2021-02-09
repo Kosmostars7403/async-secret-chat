@@ -23,6 +23,7 @@ def get_application_options():
 
 async def submit_message(writer, logger, message):
     logger.debug(f'Sending message: {message}')
+    message = message.replace('\n', '')
     writer.write(message.encode(encoding='utf-8') + b'\n\n')
     await writer.drain()
 
