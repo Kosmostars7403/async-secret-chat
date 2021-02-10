@@ -3,22 +3,12 @@ import json
 import logging
 
 import aiofiles
-import configargparse
 
 
 def setup_logger(name):
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(name)
     return logger
-
-
-def get_application_options():
-    parser = configargparse.ArgParser(default_config_files=['./config.txt'])
-    parser.add('--host', help='Host for connection.')
-    parser.add('--port', help='Port for connection.')
-    parser.add('--history', help='Path for history file.')
-
-    return parser.parse_args()
 
 
 async def submit_message(writer, logger, message):
@@ -45,8 +35,10 @@ def handle_errors(async_func):
 
 
 async def register(writer, reader, logger, username):
-    await submit_message(writer, logger, '')
-    server_message = await read_message(reader)
+    writer.write(b'\n')  # Empty line fot create new account
+    await writer.drain()
+
+    server_message = await read_message(reader)  # Server ask for preferred nickname
     logger.debug(server_message)
 
     await submit_message(writer, logger, username)
@@ -65,6 +57,9 @@ async def register(writer, reader, logger, username):
 
 
 async def authorize(writer, reader, token, logger):
+    if not token:
+        logger.error('You are not logged in. Log in or register.')
+        return None
     await asyncio.wait_for(submit_message(writer, logger, token), 10)
     auth_response = await read_message(reader)
     auth_response = json.loads(auth_response)
