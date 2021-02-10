@@ -54,7 +54,7 @@ def get_application_options():
     parser.add_argument('--host', help='Host for connection.', default=env('SENDING_HOST', SENDING_HOST))
     parser.add_argument('--port', help='Port for connection.', default=env('SENDING_PORT', SENDING_PORT))
     auth_args = parser.add_mutually_exclusive_group()
-    auth_args.add_argument('--token', help='Authorization token.', default=check_token_existence())
+    auth_args.add_argument('--token', help='Authorization token.', default=env('TOKEN', None) or check_token_existence())
     auth_args.add_argument('--username', help='Choose username for registration.')
 
     return parser.parse_args()
