@@ -1,9 +1,8 @@
 import asyncio
 from datetime import datetime
-from environs import Env
+import configargparse
 
 import aiofiles
-import argparse
 
 from utils import setup_logger, read_message, handle_errors
 
@@ -28,12 +27,11 @@ async def connect_to_chat(options):
 
 
 def get_application_options():
-    env = Env()
-    env.read_env()
-    parser = argparse.ArgumentParser('Minecraft chat listener.')
-    parser.add_argument('--host', help='Host for connection.', default=env('LISTENING_HOST', LISTENING_HOST))
-    parser.add_argument('--port', help='Port for connection.', default=env('LISTENING_PORT', LISTENING_PORT))
-    parser.add_argument('--history', help='Path for history file.', default=env('CHAT_LOG_PATH', CHAT_LOG_PATH))
+    parser = configargparse.ArgParser('Minecraft chat listener.')
+
+    parser.add('--host', help='Host for connection.', default=LISTENING_HOST, env_var='LISTENING_HOST')
+    parser.add('--port', help='Port for connection.', default=LISTENING_PORT, env_var='LISTENING_PORT')
+    parser.add('--history', help='Path for history file.', default=CHAT_LOG_PATH, env_var='CHAT_LOG_PATH')
 
     return parser.parse_args()
 

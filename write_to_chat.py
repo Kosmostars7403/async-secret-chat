@@ -1,8 +1,7 @@
 import asyncio
 import os
-import argparse
+import configargparse
 
-from environs import Env
 
 from utils import setup_logger, read_message, submit_message, handle_errors, register, \
     authorize
@@ -46,16 +45,14 @@ def check_token_existence():
 
 
 def get_application_options():
-    env = Env()
-    env.read_env()
-
-    parser = argparse.ArgumentParser('Minecraft chat sender.')
-    parser.add_argument('message', help='Choose username for registration.')
-    parser.add_argument('--host', help='Host for connection.', default=env('SENDING_HOST', SENDING_HOST))
-    parser.add_argument('--port', help='Port for connection.', default=env('SENDING_PORT', SENDING_PORT))
+    parser = configargparse.ArgParser('Minecraft chat sender.')
+    parser.add('message', help='Choose username for registration.')
+    parser.add('--host', help='Host for connection.', default=SENDING_HOST, env_var='SENDING_HOST')
+    parser.add('--port', help='Port for connection.', default=SENDING_PORT, env_var='SENDING_PORT')
     auth_args = parser.add_mutually_exclusive_group()
-    auth_args.add_argument('--token', help='Authorization token.', default=env('TOKEN', None) or check_token_existence())
-    auth_args.add_argument('--username', help='Choose username for registration.')
+    auth_args.add('--token', help='Authorization token.', default=check_token_existence(), env_var='TOKENs')
+    auth_args.add('--username', help='Choose username for registration.')
+    print('sdfsdf')
 
     return parser.parse_args()
 
