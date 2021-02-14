@@ -29,7 +29,7 @@ def get_application_options():
     parser.add('--host', help='Host for connection.', default=SENDING_HOST, env_var='SENDING_HOST')
     parser.add('--port', help='Port for connection.', default=SENDING_PORT, env_var='SENDING_PORT')
     auth_args = parser.add_mutually_exclusive_group()
-    auth_args.add('--token', help='Authorization token.', default=check_token_existence(), env_var='TOKEN')
+    auth_args.add('--minechat_token', help='Authorization token.', default=check_token_existence(), env_var='MINECHAT_TOKEN')
     auth_args.add('--username', help='Choose username for registration.')
 
     return parser.parse_args()

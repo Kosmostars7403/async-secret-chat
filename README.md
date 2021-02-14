@@ -42,7 +42,7 @@ python3 write_to_chat.py bla-bla-bla
 |----|----|----|----
 |`SENDING_HOST`| `--host` | Адрес хоста | `minechat.dvmn.org`
 |`SENDING_PORT`| `--port` | Порт хоста | `5050`
-|`TOKEN`| `--token` | Токен авторизации | `None`
+|`MINECHAT_TOKEN`| `--minechat_token` | Токен авторизации | `None`
 | - | `--username` | Желаемое имя пользователя для регистрации | ''
 
 
