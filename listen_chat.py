@@ -1,20 +1,22 @@
 import asyncio
+import logging
 from datetime import datetime
 import configargparse
 
 import aiofiles
 
 from chat_tools import read_message, connect_to_chat
-from utils import setup_logger
-
 
 LISTENING_HOST = 'minechat.dvmn.org'
 LISTENING_PORT = 5000
 CHAT_LOG_PATH = 'chat_log.txt'
 
+logger = logging.getLogger('listener')
 
-async def main(options):
-    async with connect_to_chat(options.host, options.port, logger) as (reader, writer):
+
+async def main(options, logger):
+    async with connect_to_chat(options.host, options.port) as (reader, writer):
+        logger.debug(f'Start listening chat on {options.host}:{options.port}')
         while True:
             chat_message = await asyncio.wait_for(read_message(reader), 10)
             message_received_time = datetime.now().strftime('%d.%m.%y %H:%M:%S')
@@ -35,6 +37,6 @@ def get_application_options():
 
 
 if __name__ == '__main__':
-    logger = setup_logger('listener')
+    logging.basicConfig(level=logging.DEBUG)
     options = get_application_options()
-    asyncio.run(main(options))
+    asyncio.run(main(options, logger))

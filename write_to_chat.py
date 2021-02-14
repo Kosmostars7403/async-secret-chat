@@ -1,25 +1,28 @@
 import asyncio
+import logging
 
 import configargparse
 
-from auth_tools import authorize, register
+from auth_tools import authorize, register, check_token_existence
 from chat_tools import connect_to_chat, submit_message
-from utils import setup_logger, check_token_existence
 
 SENDING_HOST = 'minechat.dvmn.org'
 SENDING_PORT = 5050
 
+logger = logging.getLogger('sender')
+
 
 async def main(options):
+    logger.debug(f'Started sending message to chat on {options.host}:{options.port}')
     if options.username:
-        async with connect_to_chat(options.host, options.port, logger) as (reader, writer):
-            options.token = await register(writer, reader, logger, options.username)
-    if options.token:
-        async with connect_to_chat(options.host, options.port, logger) as (reader, writer):
-            nickname = await authorize(writer, reader, options.token, logger)
+        async with connect_to_chat(options.host, options.port) as (reader, writer):
+            options.minechat_token = await register(writer, reader, options.username)
+    if options.minechat_token:
+        async with connect_to_chat(options.host, options.port) as (reader, writer):
+            nickname = await authorize(writer, reader, options.minechat_token)
             if not nickname:
                 return
-            await submit_message(writer, logger, options.message)
+            await submit_message(writer, options.message)
 
 
 def get_application_options():
@@ -36,6 +39,6 @@ def get_application_options():
 
 
 if __name__ == '__main__':
-    logger = setup_logger('sender')
+    logging.basicConfig(level=logging.DEBUG)
     options = get_application_options()
     asyncio.run(main(options))

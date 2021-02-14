@@ -1,11 +1,14 @@
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 
 
 RECONNECT_DELAY = 5
 
+logger = logging.getLogger('chat_tools')
 
-async def submit_message(writer, logger, message):
+
+async def submit_message(writer, message):
     logger.debug(f'Sending message: {message}')
     message = message.replace('\n', '')
     writer.write(message.encode(encoding='utf-8') + b'\n\n')
@@ -18,7 +21,7 @@ async def read_message(reader):
 
 
 @asynccontextmanager
-async def connect_to_chat(host, port, logger):
+async def connect_to_chat(host, port):
     reader = writer = None
     while True:
         try:
@@ -32,7 +35,7 @@ async def connect_to_chat(host, port, logger):
             logger.error('Timeout error with server connection!')
             raise
         except ConnectionResetError:
-            await submit_message(f'Connection failed, start new attempt in {RECONNECT_DELAY} ')
+            logger.error(f'Connection failed, start new attempt in {RECONNECT_DELAY}')
             await asyncio.sleep(RECONNECT_DELAY)
             continue
         finally:
